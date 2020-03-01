@@ -5,6 +5,8 @@ namespace App\Entity;
 use Doctrine\Common\Collections\Collection;
 use Doctrine\ORM\Mapping as ORM;
 use Swagger\Annotations as SWG;
+use JMS\Serializer\Annotation as JMS;
+
 /**
  * @ORM\Entity(repositoryClass="App\Repository\ExamRepository")
  */
@@ -14,21 +16,25 @@ class Exam
      * @ORM\Id()
      * @ORM\GeneratedValue()
      * @ORM\Column(type="integer")
+     * @JMS\Exclude()
      */
     private $id;
 
     /**
      * @ORM\Column(type="integer", nullable=true)
+     * @SWG\Property(example="10")
      */
     private $points;
 
     /**
      * @ORM\Column(type="string", length=50, nullable=true)
+     * @SWG\Property(example="Mr. John Doe")
      */
     private $teacher;
 
     /**
      * @ORM\Column(type="string", length=255, nullable=true)
+     * @SWG\Property(example="Example exam description")
      */
     private $description;
 
@@ -72,7 +78,9 @@ class Exam
 
         return $this;
     }
-
+    /**
+     * @JMS\Exclude()
+    */
     public function getMD5Shortcut(): string
     {
         return md5(

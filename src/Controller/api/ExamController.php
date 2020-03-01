@@ -163,4 +163,40 @@ class ExamController extends AbstractController
 
         return new JsonResponse('Exam with id '.$id.' deleted');
      }
+
+     /**
+     * @Route("/api/exams/{id}", name="show_exam", methods={"GET"})
+     * 
+     * @SWG\Tag(name="exams")
+     * @SWG\Response(response=200, description="successful operation")
+     * @SWG\Response(response=304, description="not modified")
+     * @SWG\Response(response=404, description="not found")
+     * 
+     *  @param int $id
+     *  @param Request $request
+     * 
+     */
+    public function showExam(int $id, Request $request) {
+        $exam = $this->getDoctrine()->getRepository(Exam::class)->find($id);
+
+        if (!$exam) {       
+            return new Response('No exam found for id '.$id, Response::HTTP_NOT_FOUND, ['content-type' => 'text/html']);
+        }
+        
+        $response = new Response();
+        $response->setContent(json_encode([
+            "id" => $exam->getId(),
+            "points" => $exam->getPoints(),
+            "teacher" => $exam->getTeacher(),
+            "description" => $exam->getDescription(),
+        ]));
+        $response->headers->set('Content-Type', 'application/json');
+        $response->setEtag($exam->getMD5Shortcut());
+        $response->setPublic();
+
+        if ($response->isNotModified($request)) {
+            return new Response('', Response::HTTP_NOT_MODIFIED, ['content-type' => 'text/html']);
+        }
+        return $response;
+     }
 }
