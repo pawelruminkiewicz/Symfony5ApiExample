@@ -3,6 +3,7 @@
 namespace App\Controller\api;
 
 use App\Entity\Exam;
+use App\Entity\Token;
 use Symfony\Bundle\FrameworkBundle\Controller\AbstractController;
 use Symfony\Component\Routing\Annotation\Route;
 use Symfony\Component\HttpFoundation\{JsonResponse, Response, Request};
@@ -61,10 +62,30 @@ class ExamController extends AbstractController
      *      @SWG\Schema(ref=@Model(type=Exam::class)),
      * )
      * 
+     * @SWG\Parameter(
+     *      name="token",
+     *      in="header",
+     *      required=true,
+     *      type="string",
+     * )
      * @param Request $request
      * 
     */
     public function addExam(Request $request) {
+        if (!$request) {
+            return $this->respondValidationError('Please provide a valid request!');
+        }
+
+        $requestToken = $request->headers->get('token');
+        $token = $this->getDoctrine()->getRepository(Token::class)->findOneBy([
+            "tokenId" =>  $requestToken
+        ]);
+
+        if($token->getExpired() !== NULL){
+            return new Response('', Response::HTTP_PRECONDITION_FAILED, ['content-type' => 'text/html']);
+        }
+        $token->setExpired(TRUE);
+
         $data = json_decode($request->getContent(), true);
         $exam = $this->getDoctrine()->getRepository(Exam::class)->findOneBy([
             "points" => $data['points'],
